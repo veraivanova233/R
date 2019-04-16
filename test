@@ -1,0 +1,131 @@
+CALC_BY_SAMPLE <- TRUE
+CALC_BY_RUNIF <- FALSE
+vendTone <- function(mood, tCalc = CALC_BY_SAMPLE) {
+  if (tCalc) {
+    if (mood != 100 && mood != 0) {
+      sam <- sample(c(1,-1), prob = c(mood, 100-mood))
+      return(sam[1])
+    } else if (mood == 100) {
+      return(1)
+    } else if (mood == 0) {
+      return(-1)
+    }
+  } else {
+    sam <- runif(2, -1, 1)
+    if (abs(sam[1]) > 1-abs(sam[1])) {
+      sam[1] <- 1
+    } else {
+      sam[1] <- -1
+    }
+    if (abs(sam[2]) > 1-abs(sam[2])) {
+      sam[2] <- 1
+    } else {
+      sam[2] <- -1
+    }
+  }
+}
+#1
+  sumSale <- 0
+  sumBuy <- 0
+  dif1 <- vector()
+  mood <- seq(0, 100, by=10)
+  for (i in mood) {
+    for (j in 100) {
+        if (vendTone(i) == 1) {
+          sumBuy <- sumBuy + 1
+        } else if (vendTone(i) == -1) {
+          sumSale <- sumSale + 1
+        }
+  }
+    d <- sumBuy - sumSale
+    dif1 <- c(dif1, d)
+  }
+  sumSale <- 0
+  sumBuy <- 0
+  dif2 <- vector()
+  mood <- seq(0, 100, by=10)
+  for (i in mood) {
+    for (j in 100) {
+      if (vendTone(i, FALSE) == 1) {
+        sumBuy <- sumBuy + 1
+      } else if (vendTone(i, FALSE) == -1) {
+        sumSale <- sumSale + 1
+      }
+    }
+    d <- sumBuy - sumSale
+    dif2 <- c(dif2, d)
+  }
+  name <- 'Динамика изменения сгенерированных случайных значений функции'
+  plot(x=mood, y=dif1, col=c('green'), cex = 2, type='b', main=name,
+       xlab="Настроение", ylab="Разница", fg='black', col.axis='black',col.lab='black', col.main='black')
+  lines(x=mood, y=dif2, col=c('pink'), cex = 2, type='b')
+  #2
+  SumSale <- 0
+  SumBuy <- 0
+  m <- 80
+  for (i in 10000) {
+    if (vendTone(m) == 1) {
+      SumSale <- SumSale + 1
+    } else if (vendTone(m) == -1) {
+      SumBuy <- SumBuy + 1
+    }
+  }
+  K <- 50 * (1+(SumSale-SumBuy)/10000)
+  print(K)
+  #3
+  T <- c(1:100)
+  res <- vector()
+  for (i in T) {
+    res <- c(res, vendTone(48))
+  }
+  x1 <- which(res == 1)
+  x2 <- which(res == -1)
+  y1 <- vector()
+  y2 <- vector()
+  for (i in 1:length(x1)) {
+    y1 <- c(y1, i)
+  }
+  for (i in 1:length(x2)) {
+    y2 <- c(y2, i)
+  }
+  print(x1)
+  print(x2)
+  print(y1)
+  print(y2)
+  name1 <- "Результат работы функции vendTone для заданного значения настроения"
+  plot(x=T, y=axes = FALSE, col=c('white'), type='p', cex=2, main=name1,
+         xlab="Настроение", ylab="Результат")
+  axis(1, at <- seq(-100,100,by=10))
+  axis(3)
+  points(x=x1, y=1:length(x1), pch=5, cex=1.5, col='black')
+  points(x=x2, y=1:length(x2), pch=22, cex=1.5, col='red')
+#4
+  names <- c("ВТБ", "Газпром", "Лукойл", "Mail.Ru", "НОВАТЭК", "Роснефть", "Starbucks", "Goldman Sachs", "Аэрофлот", "МТС")
+  prices1 <- c(3, 196, 5850, 25000, 1056, 424, 74, 1990000, 98, 263)
+  prices2 <- c(4, 207, 5600, 23000, 1106, 434, 76, 2078100, 98, 260)
+  priceMean <- (prices2 - prices1) / 2 + 0.1
+  abs <- prices2 - prices1
+  rel <- (prices2 - prices1) / priceMean
+  vol <- ((priceMean-abs)^2) / 9
+  value <- vector()
+  for (i in c(1:10)) {
+  if (abs[i] > 0 && rel[i] > 0) {
+    if (vol[i] > 50) {
+        value <- c(value, sample(85:100)[1])
+    } else if (vol[i] > 38) {
+      value <- c(value, sample(70:85)[1])
+    } else if (vol[i] > 25) {
+       value <- c(value, sample(40:70)[1])
+    } else if (vol[i] > 10) {
+      value <- c(value, sample(20:40)[1])
+    } else {
+      value <- c(value, sample(8:20)[1])
+    }
+  } else {
+    value <- c(value, sample(1:8)[1])
+  }
+  }
+  tab <- data.frame("Название" = names, "Цена на начало месяца" = prices1, "Цена на конец месяца" = prices2,
+                    "Абсолютная динамика цены" = abs, "Относительная динамика цены" = rel, "Волатильность" = vol,
+                    "Заданное значение настроения" = value)
+  print(tab)
