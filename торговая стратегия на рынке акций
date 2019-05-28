@@ -1,0 +1,121 @@
+#manageStock
+n <- 100
+gapStock <- function(gapsize=5, freq=98, dest=25, n=100, pStart) {
+  days <- sample(x=(1:n), size=freq+1)
+  values <- c(pStart)
+  for (i in 1:n) {
+    if (i %in% days) {
+      sam <- sample(c(1,-1), prob = c(dest, 100-dest))
+      sam1 <- runif(2, 0, 1)
+      values <- c(values, pStart+sam[1]*gapsize*sam1[1])
+      pStart <- pStart+sam[1]*gapsize*sam1[1]
+    }
+  }
+  return(values)
+}
+waveStock <- function(t=4, amp=50, n=100) {
+  xwav <- c(seq(1, n))
+  ywav <- vector()
+  if (sinf) {
+    ywav <- c(sin(2.7*t*xwav/n)*amp) + amp
+  } else {
+    ywav <- c(cos(xwav/(n-10))*amp) + amp
+  }
+  return(ywav)
+}
+randomStock <- function(k1=0.9, k2=1.2, n=100, pStart) {
+  xran <- c(seq(1, n))
+  yran <- sample(abs((k1*pStart):(k2*pStart)), size=n, replace=TRUE)
+  return(yran)
+}
+slopeStock <- function(doSlope=TRUE, pStart, slopeUp=TRUE, slopeK=0.9, n=100) {
+  vals <- c(pStart)
+  if (slopeUp) {
+    for (i in 1:n) {
+      vals <- c(vals, pStart*abs(slopeK))
+      pStart <- pStart+1
+    }
+  } else {
+    for (i in 1:n) {
+      if (pStart*abs(slopeK) < 0) {
+        vals <- c(vals, 0)
+      } else {
+        vals <- c(vals, pStart*abs(slopeK))
+      }
+      pStart <- pStart-1
+    }
+  }
+  vals1 <- vector()
+  for (i in 1:(length(vals)-1)) {
+    vals1 <- c(vals1, vals[i])
+  }
+  return(vals1)
+}
+manageStock <- function(doRandom=TRUE, doWave=TRUE, doGap=TRUE, doSlope=TRUE, priceStart=100) {
+  price1 <- 0
+  price2 <- 0
+  price3 <- 0
+  price4 <- 0
+  if (doRandom) {
+  price1 <- randomStock(k1=0.9, k2=1.2, pStart=priceStart)
+  }
+  if (doWave) {
+  price2 <- waveStock(t=4, amp=50, n=100)
+  }
+  if (doGap) {
+  price3 <- gapStock(gapsize=5, freq=98, dest=40, n=100, pStart=priceStart)
+  }
+  if (doSlope) {
+  price4 <- slopeStock(pStart=pStart, slopeUp=FALSE, slopeK=1.8, n=100)
+  }
+  price <- as.integer(price1 + price2 + price3 + price4)
+  return(price)
+}
+#1 quantStock
+quantStock <- function(nAll=10, nMin=5, nMax=20, tSaleBuy=-1) {
+  if (tSaleBuy == 1) {
+    return(sample(x=(nMin:nMax), size=1))
+  }
+  return(sample(x=(min(nMin,nAll):min(nMax:nAll)), size=1))
+}
+prices <- manageStock()
+# подготовительные данные
+pStart <- 100
+nMin <- 5
+nMax <- 20
+n <- 100
+#2
+vendTone <- function(mood) {
+  if ((mood != 100) && (mood != 0)) {
+    sam <- sample(c(1,-1), prob = c(mood, 100-mood))
+    return(sam[1])
+  } else if (mood == 100) {
+    return(1)
+  } else if (mood == 0) {
+    return(-1)
+  }
+}
+total_profit <- 100000
+total_amount <- 0
+Q <- 100000
+ for (i in 1:n) {
+   tSB <- vendTone(mood)
+   amount <- quantStock(tSaleBuy=tSB)
+   profit <- prices[i]*amount*tSB
+   if (tSB == 1) {
+     if (total_profit - profit > 0) {
+       total_profit <- total_profit - profit
+       total_amount <- total_amount + amount
+     }
+   } else {
+     if (total_amount - amount > 0) {
+       total_amount <- total_amount - amount
+       total_profit <- total_profit + abs(profit)
+     }
+   }
+  sales <- c(sales, profit)
+}
+Pr <- total_profit + total_amount*prices[n] - Q
+R <- (Pr/Q) * 100
+print(Pr)
+print(R)
